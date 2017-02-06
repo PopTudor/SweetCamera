@@ -7,14 +7,14 @@ import android.hardware.Camera;
  * Created by Tudor Pop on 2/3/2017.
  */
 
-public class FeatureChecker {
+class FeatureChecker {
 	private final PackageManager mPackageManager;
 
-	public FeatureChecker(final PackageManager packageManager) {
+	FeatureChecker(final PackageManager packageManager) {
 		mPackageManager = packageManager;
 	}
 
-	public boolean hasCamera(final int camera) {
+	boolean hasCamera(final int camera) {
 		switch (camera) {
 			case Camera.CameraInfo.CAMERA_FACING_FRONT:
 				if (mPackageManager.hasSystemFeature(PackageManager.FEATURE_CAMERA_FRONT))

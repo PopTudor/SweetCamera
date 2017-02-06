@@ -76,7 +76,15 @@ public class Camera {
 		});
 	}
 
+	public void open(final TextureView preview) {
+		open();
+		startPreview(preview);
+	}
+
+
 	public void startPreview(final TextureView preview) {
+		if (!isOpened())
+			open();
 		mPreview = preview;
 		startPreview();
 	}
@@ -152,6 +160,7 @@ public class Camera {
 
 	public void close() {
 		synchronized (sObject) {
+			stopPreview();
 			if (isRecording()) {
 				mCameraRecorder.releaseMediaRecorder();
 			}
