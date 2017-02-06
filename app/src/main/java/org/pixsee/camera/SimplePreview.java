@@ -18,18 +18,24 @@ public class SimplePreview extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_simple_preview);
         camera = new Camera(this);
-        preview = (TextureView) findViewById(R.id.textureView);
+        preview = (TextureView) findViewById(R.id.preview);
     }
 
     @Override
     protected void onResume() {
         super.onResume();
         camera.open(preview);
+        // or
+//        camera.open();
+//        camera.startPreview(preview);
     }
 
     @Override
     protected void onPause() {
         super.onPause();
         camera.close();
+        // or
+//        camera.stopPreview();
+//        camera.close();
     }
 }

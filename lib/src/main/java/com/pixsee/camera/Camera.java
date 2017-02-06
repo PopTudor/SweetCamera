@@ -86,6 +86,7 @@ public class Camera {
 		if (!isOpened())
 			open();
 		mPreview = preview;
+
 		startPreview();
 	}
 
@@ -118,16 +119,12 @@ public class Camera {
 				mConfiguration.setZoom(0);
 				mConfiguration.configurePreviewSize(mPreview, orientation);
 				mConfiguration.configureRotation(mCameraFacing, mActivity);
-				startPreview(mPreview.getSurfaceTexture());
+				startPreviewSurfaceTexture(mPreview.getSurfaceTexture());
 			}
 		});
 	}
 
-	public int getMaxZoom() {
-		return mConfiguration.getMaxZoom();
-	}
-
-	private void startPreview(@NonNull final SurfaceTexture previewTexture) {
+	private void startPreviewSurfaceTexture(@NonNull final SurfaceTexture previewTexture) {
 		try {
 			// Requires API level 11+, For backward compatibility use {@link setPreviewDisplay}
 			// with {@link SurfaceView}
@@ -171,6 +168,10 @@ public class Camera {
 				setOpened(false);
 			}
 		}
+	}
+
+	public int getMaxZoom() {
+		return mConfiguration.getMaxZoom();
 	}
 
 	private android.hardware.Camera getCamera(int camera) throws IllegalArgumentException {
