@@ -11,24 +11,32 @@
     tools:context="org.pixsee.camera.MainActivity">
 
     <Button
-        android:text="Simple preview"
+        android:id="@+id/simplePreviewButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_alignParentTop="true"
-        android:id="@+id/simplePreviewButton"
-        android:layout_alignParentRight="true"
         android:layout_alignParentEnd="true"
         android:layout_alignParentLeft="true"
-        android:layout_alignParentStart="true" />
+        android:layout_alignParentRight="true"
+        android:layout_alignParentStart="true"
+        android:layout_alignParentTop="true"
+        android:text="Simple preview" />
 
     <Button
-        android:text="Simple TextureView"
+        android:id="@+id/simpleTextureView"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:id="@+id/simpleTextureView"
-        android:layout_below="@+id/simplePreviewButton"
+        android:layout_alignParentEnd="true"
         android:layout_alignParentLeft="true"
-        android:layout_alignParentStart="true"
         android:layout_alignParentRight="true"
-        android:layout_alignParentEnd="true" />
+        android:layout_alignParentStart="true"
+        android:layout_below="@+id/simplePreviewButton"
+        android:text="Simple TextureView" />
+
+    <Button
+        android:id="@+id/startStop"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/simpleTextureView"
+        android:layout_centerHorizontal="true"
+        android:text="Start - stop camera" />
 </RelativeLayout>

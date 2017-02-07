@@ -1,9 +1,9 @@
 package org.pixsee.camera;
 
 import android.content.Intent;
+import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
-import android.os.Bundle;
 import android.view.View;
 
 public class MainActivity extends AppCompatActivity {
@@ -28,6 +28,13 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 Intent intent = new Intent(MainActivity.this, SimpleTextureViewListenerActivity.class);
+                startActivity(intent);
+            }
+        });
+        findViewById(R.id.startStop).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(MainActivity.this, StartStopPreview.class);
                 startActivity(intent);
             }
         });

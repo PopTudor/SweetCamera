@@ -79,7 +79,7 @@ public class Camera {
      * @param facing  {@link CameraFacing} is front or back
      * @param preview the "sheet" where to display camera preview frames
      */
-    public void open(@CameraFacing final int facing, @NonNull final TextureView preview) {
+    public void openAndStart(@CameraFacing final int facing, @NonNull final TextureView preview) {
         open(facing);
         startPreview(preview);
     }
