@@ -1,10 +1,11 @@
 package org.pixsee.camera;
 
-import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v7.app.AppCompatActivity;
 import android.view.TextureView;
 
 import com.pixsee.camera.Camera;
+import com.pixsee.camera.CameraFacing;
 
 /**
  * The simplest case of opening the camera and showing the preview frames on screen
@@ -24,7 +25,7 @@ public class SimplePreview extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
-        camera.open(preview);
+        camera.open(CameraFacing.FRONT, preview);
         // or
 //        camera.open();
 //        camera.startPreview(preview);

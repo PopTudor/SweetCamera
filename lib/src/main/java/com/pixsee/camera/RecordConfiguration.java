@@ -14,7 +14,6 @@ class RecordConfiguration extends CameraConfiguration {
 	private final CameraRecorder mCameraRecorder;
 
 	public RecordConfiguration(final Camera camera, final CameraRecorder cameraRecorder) {
-		super(camera);
 		mCameraRecorder = cameraRecorder;
 	}
 
