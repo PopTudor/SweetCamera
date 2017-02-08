@@ -23,8 +23,7 @@ import static com.pixsee.camera.CameraFacing.FRONT;
 public class Camera {
     private static final HandlerThread mHandlerThread = new HandlerThread("openCameraAndVideoRecorder", Thread.MAX_PRIORITY);
     private static final Object sObject = new Object();
-    /* static because we can have multiple Camera but we record only one camera */
-    private static boolean isRecording;
+
     /* static because we can have multiple Camera but only one camera is open at a time */
     private static boolean isOpened = false;
     private final Handler mHandler;
@@ -41,13 +40,13 @@ public class Camera {
      *
      * @param activity that holds the drawing surface of the camera
      */
-    public Camera(final Activity activity) {
+    public Camera(@NonNull final Activity activity) {
         mActivity = activity;
         if (!mHandlerThread.isAlive())
             mHandlerThread.start();
         mHandler = new Handler(mHandlerThread.getLooper());
         featureChecker = new FeatureChecker(mActivity.getPackageManager());
-        mConfiguration = new CameraConfiguration();
+        mConfiguration = new CameraConfiguration(mActivity);
     }
 
     /**
@@ -55,7 +54,7 @@ public class Camera {
      *
      * @param fragment that holds the drawing surface of the camera
      */
-    public Camera(final Fragment fragment) {
+    public Camera(@NonNull final Fragment fragment) {
         this(fragment.getActivity());
     }
 
@@ -63,12 +62,13 @@ public class Camera {
         if (isOpened()) {
             throw new RuntimeException("Camera is already opened!");
         }
-        mConfiguration.setCameraFacing(facing);
         mHandler.post(new Runnable() {
             @Override
             public void run() {
-                mCamera = getCamera(mConfiguration.getCameraFacing());
+                mCamera = getCamera(facing);
+                mConfiguration.setCameraFacing(facing);
                 mConfiguration.setCamera(mCamera);
+                mCameraRecorder = new CameraRecorder(mCamera, mConfiguration);
             }
         });
     }
@@ -84,30 +84,18 @@ public class Camera {
         startPreview(preview);
     }
 
+    /**
+     * Open front camera by default but don't start the preview
+     */
+    public void open() {
+        open(mConfiguration.getCameraFacing());
+    }
+
     public void startPreview(@NonNull final TextureView preview) {
         if (!isOpened())
             open();
         mPreview = preview;
         startPreview();
-    }
-
-    /**
-     * Open front camera by default but don't start the preview
-     */
-    public void open() {
-        open(FRONT);
-    }
-
-    public boolean isOpened() {
-        return isOpened;
-    }
-
-    private void setOpened(final boolean opened) {
-        isOpened = opened;
-    }
-
-    public void setZoom(int zoom) {
-        mConfiguration.setZoom(zoom);
     }
 
     /**
@@ -117,13 +105,9 @@ public class Camera {
         mHandler.post(new Runnable() {
             @Override
             public void run() {
-                if (isRecording) {
-                    mCameraRecorder = new CameraRecorder(mCamera, mPreview);
-                    mConfiguration = new RecordConfiguration(mCamera, mCameraRecorder);
-                }
                 mConfiguration.setZoom(0);
                 mConfiguration.configurePreviewSize(mPreview, orientation);
-                mConfiguration.configureRotation(mConfiguration.getCameraFacing(), mActivity);
+                mConfiguration.configureRotation();
                 startPreviewSurfaceTexture(mPreview.getSurfaceTexture());
             }
         });
@@ -140,24 +124,24 @@ public class Camera {
         }
     }
 
+    public void startRecording() {
+        mCameraRecorder.start(mPreview);
+    }
+
+    public void stopPreview() {
+        mCamera.stopPreview();
+    }
+
+    public void stopRecording() {
+        mCameraRecorder.stop();
+    }
+
     public void switchCamera() {
         stopPreview();
         close();
         mConfiguration.switchFacing();
         open();
         startPreview();
-    }
-
-    public boolean isRecording() {
-        return isRecording;
-    }
-
-    public void setRecording(final boolean recording) {
-        isRecording = recording;
-    }
-
-    public void stopPreview() {
-        mCamera.stopPreview();
     }
 
     public void close() {
@@ -170,9 +154,21 @@ public class Camera {
                 // release the camera for other applications
                 mCamera.release();
                 mCamera = null;
-                setOpened(false);
+                isOpened = false;
             }
         }
+    }
+
+    public boolean isOpened() {
+        return isOpened;
+    }
+
+    public boolean isRecording() {
+        return mCameraRecorder.isRecording();
+    }
+
+    public void setZoom(int zoom) {
+        mConfiguration.setZoom(zoom);
     }
 
     public int getMaxZoom() {
@@ -184,7 +180,7 @@ public class Camera {
             throw new IllegalArgumentException("Specified camera [i] does not exist!");
         // from here on we consider the camera as open and any subsequent request will throw Camera already open exception
         synchronized (sObject) {
-            setOpened(true);
+            isOpened = true;
             // BEGIN_INCLUDE (configure_preview)
             switch (camera) {
                 case FRONT:

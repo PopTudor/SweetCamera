@@ -2,16 +2,16 @@ package org.pixsee.camera;
 
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
-import android.view.TextureView;
 import android.view.View;
 import android.widget.Button;
 
 import com.pixsee.camera.Camera;
 import com.pixsee.camera.CameraFacing;
+import com.pixsee.camera.ui.AutoFitTextureView;
 
 public class StartStopPreview extends AppCompatActivity implements View.OnClickListener {
     Camera camera;
-    TextureView preview;
+    AutoFitTextureView preview;
 
     Button start;
     Button stop;
@@ -21,7 +21,7 @@ public class StartStopPreview extends AppCompatActivity implements View.OnClickL
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_start_stop_preview);
         camera = new Camera(this);
-        preview = (TextureView) findViewById(R.id.preview);
+        preview = (AutoFitTextureView) findViewById(R.id.preview);
         start = (Button) findViewById(R.id.start);
         stop = (Button) findViewById(R.id.stop);
         start.setOnClickListener(this);

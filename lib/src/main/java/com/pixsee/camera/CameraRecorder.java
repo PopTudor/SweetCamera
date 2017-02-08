@@ -4,6 +4,7 @@ import android.hardware.Camera;
 import android.media.CamcorderProfile;
 import android.media.MediaRecorder;
 import android.provider.MediaStore;
+import android.support.annotation.NonNull;
 import android.util.Log;
 import android.view.TextureView;
 
@@ -17,64 +18,98 @@ import static android.content.ContentValues.TAG;
  */
 
 class CameraRecorder {
-	private Camera mCamera;
-	private TextureView mPreview;
-	private File mOutputFile;
-	private MediaRecorder mMediaRecorder;
+    private final CameraConfiguration configuration;
+    private Camera mCamera;
+    private File mOutputFile;
+    private MediaRecorder mMediaRecorder;
+    /* static because we can have multiple Camera but we record only one camera */
+    private boolean isRecording;
+    private boolean isPrepared;
 
-	public CameraRecorder(final Camera camera, final TextureView preview) {
-		mCamera = camera;
-		mPreview = preview;
-	}
 
-	public void prepareVideoRecorder(final Camera.Size optimalSize) {
-		// Use the same size for recording profile.
-		CamcorderProfile profile = CamcorderProfile.get(CamcorderProfile.QUALITY_HIGH);
-		profile.videoFrameWidth = optimalSize.width;
-		profile.videoFrameHeight = optimalSize.height;
+    public CameraRecorder(final Camera camera, final CameraConfiguration configuration) {
+        mCamera = camera;
+        this.configuration = configuration;
+    }
 
-		// BEGIN_INCLUDE (configure_media_recorder)
-		mMediaRecorder = new MediaRecorder();
+    public void prepareVideoRecorder(@NonNull final TextureView preview) {
+        Camera.Size optimalSize = configuration.getOptimalSize(preview);
+        // Use the same size for recording profile.
+        CamcorderProfile profile = CamcorderProfile.get(CamcorderProfile.QUALITY_HIGH);
+        profile.videoFrameWidth = optimalSize.width;
+        profile.videoFrameHeight = optimalSize.height;
 
-		// Step 1: Unlock and set camera to MediaRecorder
-		mCamera.unlock();
-		mMediaRecorder.setCamera(mCamera);
+        // BEGIN_INCLUDE (configure_media_recorder)
+        mMediaRecorder = new MediaRecorder();
 
-		// Step 2: Set sources
-		mMediaRecorder.setAudioSource(MediaRecorder.AudioSource.DEFAULT);
-		mMediaRecorder.setVideoSource(MediaRecorder.VideoSource.CAMERA);
+        // Step 1: Unlock and set camera to MediaRecorder
+        mCamera.unlock();
+        mMediaRecorder.setCamera(mCamera);
 
-		// Step 3: Set a CamcorderProfile (requires API Level 8 or higher)
-		mMediaRecorder.setProfile(profile);
+        // Step 2: Set sources
+        mMediaRecorder.setAudioSource(MediaRecorder.AudioSource.DEFAULT);
+        mMediaRecorder.setVideoSource(MediaRecorder.VideoSource.CAMERA);
 
-		// Step 4: Set output file
-		mOutputFile = CameraHelper.getOutputMediaFile(MediaStore.Files.FileColumns.MEDIA_TYPE_VIDEO);
-		mMediaRecorder.setOutputFile(mOutputFile.getPath());
-		// END_INCLUDE (configure_media_recorder)
+        // Step 3: Set a CamcorderProfile (requires API Level 8 or higher)
+        mMediaRecorder.setProfile(profile);
 
-		// Step 5: Prepare configured MediaRecorder
-		try {
-			mMediaRecorder.prepare();
-		} catch (IllegalStateException e) {
-			Log.d(TAG, "IllegalStateException preparing MediaRecorder: " + e.getMessage());
-			releaseMediaRecorder();
-		} catch (IOException e) {
-			Log.d(TAG, "IOException preparing MediaRecorder: " + e.getMessage());
-			releaseMediaRecorder();
-		}
-	}
+        // Step 4: Set output file
+        mOutputFile = CameraHelper.getOutputMediaFile(MediaStore.Files.FileColumns.MEDIA_TYPE_VIDEO);
+        mMediaRecorder.setOutputFile(mOutputFile.getPath());
+        // END_INCLUDE (configure_media_recorder)
 
-	public void releaseMediaRecorder() {
-		if (mMediaRecorder != null) {
-			// clear recorder configuration
-			mMediaRecorder.reset();
-			// release the recorder object
-			mMediaRecorder.release();
-			mMediaRecorder = null;
-			// Lock camera for later use i.e taking it back from MediaRecorder.
-			// MediaRecorder doesn't need it anymore and we will release it if the activity pauses.
-			mCamera.lock();
-		}
-	}
+        // Step 5: Prepare configured MediaRecorder
+        try {
+            mMediaRecorder.prepare();
+            isPrepared = true;
+        } catch (IllegalStateException e) {
+            Log.d(TAG, "IllegalStateException preparing MediaRecorder: " + e.getMessage());
+            releaseMediaRecorder();
+        } catch (IOException e) {
+            Log.d(TAG, "IOException preparing MediaRecorder: " + e.getMessage());
+            releaseMediaRecorder();
+        }
+    }
 
+    public void start(final TextureView preview) {
+        if (isRecording) return;
+        prepareVideoRecorder(preview);
+        if (isPrepared) {
+            mMediaRecorder.start();
+            isRecording = true;
+        } else
+            releaseMediaRecorder();
+    }
+
+    public void stop() {
+        mMediaRecorder.stop();
+        isRecording = false;
+    }
+
+    public boolean isRecording() {
+        return isRecording;
+    }
+
+    public void releaseMediaRecorder() {
+        if (mMediaRecorder != null) {
+            isPrepared = false;
+            stop();
+            // clear recorder configuration
+            mMediaRecorder.reset();
+            // release the recorder object
+            mMediaRecorder.release();
+            mMediaRecorder = null;
+            // Lock camera for later use i.e taking it back from MediaRecorder.
+            // MediaRecorder doesn't need it anymore and we will release it if the activity pauses.
+            try {
+                mCamera.reconnect();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    public boolean isPrepared() {
+        return isPrepared;
+    }
 }

@@ -8,6 +8,8 @@ import android.util.Log;
 import android.view.Surface;
 import android.view.TextureView;
 
+import com.pixsee.camera.ui.AutoFitTextureView;
+
 import java.util.Collections;
 import java.util.List;
 
@@ -20,13 +22,17 @@ import static com.pixsee.camera.CameraFacing.FRONT;
  * Created by Tudor Pop on 2/2/2017.
  */
 public class CameraConfiguration {
+    @NonNull
+    private final Activity mActivity;
     protected Camera mCamera;
     @CameraFacing
     private int cameraFacing = FRONT;
     private int orientation = Configuration.ORIENTATION_PORTRAIT;
+    private int rotation;
 
 
-    public CameraConfiguration() {
+    public CameraConfiguration(@NonNull Activity activity) {
+        mActivity = activity;
     }
 
     public Camera getCamera() {
@@ -37,8 +43,8 @@ public class CameraConfiguration {
         this.mCamera = mCamera;
     }
 
-    public void configureRotation(int cameraFacing, @NonNull Activity activity) {
-        int rotation = activity.getWindowManager().getDefaultDisplay().getRotation();
+    public void configureRotation() {
+        int rotation = mActivity.getWindowManager().getDefaultDisplay().getRotation();
         int degrees = 0;
         switch (rotation) {
             case Surface.ROTATION_0:
@@ -74,22 +80,25 @@ public class CameraConfiguration {
             throw new RuntimeException("Camera configurations must have a camera set when one is available");
         mCamera.setDisplayOrientation(displayRotation);
 
-        int rotate;
         if (isFrontFacingCam(cameraFacing)) {
-            rotate = (360 + cameraRotationOffset + degrees) % 360;
+            this.rotation = (360 + cameraRotationOffset + degrees) % 360;
         } else {
-            rotate = (360 + cameraRotationOffset - degrees) % 360;
+            this.rotation = (360 + cameraRotationOffset - degrees) % 360;
         }
 
-        Log.v(TAG, "screenshot rotation: " + cameraRotationOffset + " / " + degrees + " = " + rotate);
+        Log.v(TAG, "screenshot rotation: " + cameraRotationOffset + " / " + degrees + " = " + this.rotation);
 
         Camera.Parameters parameters = mCamera.getParameters();
-        parameters.setRotation(rotate);
+        parameters.setRotation(this.rotation);
         mCamera.setParameters(parameters);
     }
 
     protected boolean isFrontFacingCam(int cameraFacing) {
         return cameraFacing == Camera.CameraInfo.CAMERA_FACING_FRONT;
+    }
+
+    public int getRotation() {
+        return rotation;
     }
 
     public void configurePreviewSize(final TextureView preview, final int orientation) {
@@ -98,12 +107,33 @@ public class CameraConfiguration {
         // dimensions of our preview surface.
         Camera.Parameters parameters = mCamera.getParameters();
         List<Camera.Size> mSupportedPreviewSizes = parameters.getSupportedPreviewSizes();
-        Camera.Size optimalSize = CameraHelper.getOptimalVideoSize(Collections.<Camera.Size>emptyList(),
+        final Camera.Size optimalSize = CameraHelper.getOptimalVideoSize(Collections.<Camera.Size>emptyList(),
                 mSupportedPreviewSizes, preview.getWidth(), preview.getHeight(), orientation);
+
+        if (preview instanceof AutoFitTextureView)
+            mActivity.runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    ((AutoFitTextureView) preview).setAspectRatio(optimalSize);
+                }
+            });
 
         // likewise for the camera object itself.
         parameters.setPreviewSize(optimalSize.width, optimalSize.height);
         mCamera.setParameters(parameters);
+    }
+
+    public Camera.Size getOptimalSize(@NonNull TextureView preview) {
+        // We need to make sure that our preview and recording video size are supported by the
+        // camera. Query camera to find all the sizes and choose the optimal size given the
+        // dimensions of our preview surface.
+        Camera.Parameters parameters = mCamera.getParameters();
+        List<Camera.Size> mSupportedPreviewSizes = parameters.getSupportedPreviewSizes();
+        List<Camera.Size> mSupportedVideoSizes = parameters.getSupportedVideoSizes();
+        Camera.Size optimalSize = CameraHelper.getOptimalVideoSize(mSupportedVideoSizes, mSupportedPreviewSizes, preview.getWidth(),
+                preview.getHeight(), orientation);
+
+        return optimalSize;
     }
 
     public void setZoom(int zoom) {
@@ -122,6 +152,7 @@ public class CameraConfiguration {
         return mCamera.getParameters().getMaxZoom();
     }
 
+    @CameraFacing
     public int getCameraFacing() {
         return cameraFacing;
     }

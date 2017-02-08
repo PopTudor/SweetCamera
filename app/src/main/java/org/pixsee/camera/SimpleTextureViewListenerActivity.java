@@ -6,17 +6,18 @@ import android.support.v7.app.AppCompatActivity;
 import android.view.TextureView;
 
 import com.pixsee.camera.Camera;
+import com.pixsee.camera.ui.AutoFitTextureView;
 
 public class SimpleTextureViewListenerActivity extends AppCompatActivity {
     Camera camera;
-    TextureView preview;
+    AutoFitTextureView preview;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_simple_texture_view_listener);
         camera = new Camera(this);
-        preview = (TextureView) findViewById(R.id.preview);
+        preview = (AutoFitTextureView) findViewById(R.id.preview);
         preview.setSurfaceTextureListener(new TextureView.SurfaceTextureListener() {
             @Override
             public void onSurfaceTextureAvailable(SurfaceTexture surface, int width, int height) {
