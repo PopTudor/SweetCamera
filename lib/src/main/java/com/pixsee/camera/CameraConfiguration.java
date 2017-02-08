@@ -101,7 +101,7 @@ public class CameraConfiguration {
         return rotation;
     }
 
-    public void configurePreviewSize(final TextureView preview, final int orientation) {
+    void configurePreviewSize(@NonNull final TextureView preview, final int orientation) {
         // We need to make sure that our preview and recording video size are supported by the
         // camera. Query camera to find all the sizes and choose the optimal size given the
         // dimensions of our preview surface.

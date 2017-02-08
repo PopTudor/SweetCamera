@@ -68,32 +68,34 @@ public class Camera {
                 mCamera = getCamera(facing);
                 mConfiguration.setCameraFacing(facing);
                 mConfiguration.setCamera(mCamera);
+                mConfiguration.setZoom(0);
+                mConfiguration.configurePreviewSize(mPreview, orientation);
+                mConfiguration.configureRotation();
                 mCameraRecorder = new CameraRecorder(mCamera, mConfiguration);
             }
         });
     }
 
     /**
-     * Open the camera and start the preview
+     * Open the camera and openAndStart the preview
      *
      * @param facing  {@link CameraFacing} is front or back
      * @param preview the "sheet" where to display camera preview frames
      */
     public void openAndStart(@CameraFacing final int facing, @NonNull final TextureView preview) {
+        if (isOpened) return;
         open(facing);
         startPreview(preview);
     }
 
     /**
-     * Open front camera by default but don't start the preview
+     * Open front camera by default but don't openAndStart the preview
      */
     public void open() {
         open(mConfiguration.getCameraFacing());
     }
 
     public void startPreview(@NonNull final TextureView preview) {
-        if (!isOpened())
-            open();
         mPreview = preview;
         startPreview();
     }
@@ -105,9 +107,6 @@ public class Camera {
         mHandler.post(new Runnable() {
             @Override
             public void run() {
-                mConfiguration.setZoom(0);
-                mConfiguration.configurePreviewSize(mPreview, orientation);
-                mConfiguration.configureRotation();
                 startPreviewSurfaceTexture(mPreview.getSurfaceTexture());
             }
         });

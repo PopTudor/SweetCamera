@@ -6,6 +6,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.view.TextureView;
 
 import com.pixsee.camera.Camera;
+import com.pixsee.camera.CameraFacing;
 import com.pixsee.camera.ui.AutoFitTextureView;
 
 public class SimpleTextureViewListenerActivity extends AppCompatActivity {
@@ -21,7 +22,7 @@ public class SimpleTextureViewListenerActivity extends AppCompatActivity {
         preview.setSurfaceTextureListener(new TextureView.SurfaceTextureListener() {
             @Override
             public void onSurfaceTextureAvailable(SurfaceTexture surface, int width, int height) {
-                camera.startPreview(preview);
+                camera.openAndStart(CameraFacing.FRONT, preview);
             }
 
             @Override

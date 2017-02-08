@@ -20,23 +20,31 @@ public class MainActivity extends AppCompatActivity {
         findViewById(R.id.simplePreviewButton).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent intent = new Intent(MainActivity.this, SimplePreview.class);
-                startActivity(intent);
+                startActivity(SimplePreview.class);
             }
         });
         findViewById(R.id.simpleTextureView).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent intent = new Intent(MainActivity.this, SimpleTextureViewListenerActivity.class);
-                startActivity(intent);
+                startActivity(SimpleTextureViewListenerActivity.class);
             }
         });
         findViewById(R.id.startStop).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent intent = new Intent(MainActivity.this, StartStopPreview.class);
-                startActivity(intent);
+                startActivity(StartStopPreview.class);
             }
         });
+        findViewById(R.id.record).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                startActivity(RecordActivity.class);
+            }
+        });
+    }
+
+    public void startActivity(Class param) {
+        Intent intent = new Intent(MainActivity.this, param);
+        startActivity(intent);
     }
 }
