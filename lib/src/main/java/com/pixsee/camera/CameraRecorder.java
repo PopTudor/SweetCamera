@@ -29,9 +29,10 @@ class CameraRecorder implements com.pixsee.camera.Camera.CameraListener {
 
     public CameraRecorder(final CameraConfiguration configuration) {
         this.configuration = configuration;
+        mMediaRecorder = new MediaRecorder();
     }
 
-    public void prepareVideoRecorder(@NonNull final TextureView preview) {
+    private void prepareVideoRecorder(@NonNull final TextureView preview) {
         Camera.Size optimalSize = configuration.getOptimalSize(preview);
         // Use the same size for recording profile.
         CamcorderProfile profile = CamcorderProfile.get(CamcorderProfile.QUALITY_HIGH);
@@ -39,7 +40,6 @@ class CameraRecorder implements com.pixsee.camera.Camera.CameraListener {
         profile.videoFrameHeight = optimalSize.height;
 
         // BEGIN_INCLUDE (configure_media_recorder)
-        mMediaRecorder = new MediaRecorder();
         mMediaRecorder.setOrientationHint(configuration.getRotation());
 
         // Step 1: Unlock and set camera to MediaRecorder
@@ -82,8 +82,10 @@ class CameraRecorder implements com.pixsee.camera.Camera.CameraListener {
     }
 
     public void stop() {
-        mMediaRecorder.stop();
-        isRecording = false;
+        if (isRecording) {
+            mMediaRecorder.stop();
+            isRecording = false;
+        }
     }
 
     public boolean isRecording() {
