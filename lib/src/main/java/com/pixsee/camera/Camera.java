@@ -4,9 +4,11 @@ import android.app.Activity;
 import android.os.Handler;
 import android.os.HandlerThread;
 import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.view.TextureView;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -21,8 +23,6 @@ public class Camera implements CameraInterface {
     private static final HandlerThread mHandlerThread = new HandlerThread("openCameraAndVideoRecorder", Thread.MAX_PRIORITY);
     private static final Object sObject = new Object();
     private final Handler mHandler;
-    /* static because we can have multiple Camera but only one camera is open at a time */
-    private final Activity mActivity;
     private CameraWrapper mCameraWrapper;
     private TextureView mPreview;
 
@@ -37,13 +37,12 @@ public class Camera implements CameraInterface {
      * @param activity that holds the drawing surface of the camera
      */
     public Camera(@NonNull final Activity activity) {
-        mActivity = activity;
         if (!mHandlerThread.isAlive())
             mHandlerThread.start();
         mHandler = new Handler(mHandlerThread.getLooper());
-        mConfiguration = new CameraConfiguration(mActivity);
+        mConfiguration = new CameraConfiguration(activity);
         mCameraRecorder = new CameraRecorder(mConfiguration);
-        mCameraWrapper = new CameraWrapper(mActivity);
+        mCameraWrapper = new CameraWrapper(activity);
         attach(mConfiguration, mCameraRecorder);
     }
 
@@ -58,7 +57,7 @@ public class Camera implements CameraInterface {
 
     @Override
     public void open(@CameraFacing final int facing) {
-        if (isOpened()) {
+        if (isOpen()) {
             throw new RuntimeException("Camera is already opened!");
         }
         mHandler.post(new Runnable() {
@@ -80,7 +79,7 @@ public class Camera implements CameraInterface {
      * @param preview the "sheet" where to display camera preview frames
      */
     public void openAndStart(@CameraFacing final int facing, @NonNull final TextureView preview) {
-        if (mCameraWrapper.isOpened()) return;
+        if (mCameraWrapper.isOpen()) return;
         open(facing);
         startPreview(preview);
     }
@@ -109,6 +108,20 @@ public class Camera implements CameraInterface {
 
     public void startRecording() {
         mCameraRecorder.start(mPreview);
+    }
+
+    /**
+     * Save to the given directory. <br>
+     * By default it will save recordings/photos to {@code Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES)}.
+     * This way all the media remains on the phone, even after user uninstalls the app. <br>
+     * You can also pass null to get the default behavior
+     *
+     * @param directory where to save the photos/videos
+     */
+    public void saveDir(@Nullable File directory) {
+        if (directory == null)
+            return;
+        mCameraRecorder.saveDir(directory);
     }
 
     @Override
@@ -140,8 +153,8 @@ public class Camera implements CameraInterface {
     }
 
     @Override
-    public boolean isOpened() {
-        return mCameraWrapper.isOpened();
+    public boolean isOpen() {
+        return mCameraWrapper.isOpen();
     }
 
     public boolean isRecording() {
@@ -156,21 +169,21 @@ public class Camera implements CameraInterface {
         return mConfiguration.getMaxZoom();
     }
 
-    public void attach(CameraListener cameraListener) {
+    public void attach(@NonNull CameraListener cameraListener) {
         listeners.add(cameraListener);
     }
 
-    public void attach(CameraListener... cameraListeners) {
+    public void attach(@NonNull CameraListener... cameraListeners) {
         Collections.addAll(listeners, cameraListeners);
     }
 
-    private void notifyListeners(android.hardware.Camera mCamera) {
+    private void notifyListeners(@NonNull android.hardware.Camera mCamera) {
         for (CameraListener listener : listeners) {
             listener.cameraAvailable(mCamera);
         }
     }
 
     interface CameraListener {
-        void cameraAvailable(android.hardware.Camera camera);
+        void cameraAvailable(@NonNull android.hardware.Camera camera);
     }
 }

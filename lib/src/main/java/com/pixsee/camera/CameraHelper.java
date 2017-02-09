@@ -10,6 +10,7 @@ import android.hardware.Camera;
 import android.os.Build;
 import android.os.Environment;
 import android.support.annotation.IntDef;
+import android.support.annotation.NonNull;
 import android.util.Log;
 
 import java.io.File;
@@ -156,7 +157,7 @@ class CameraHelper {
 			throw new RuntimeException("SDCard not mounted or can't access external storage");
 		}
 
-		File mediaStorageDir = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES), "Playsnap");
+		File mediaStorageDir = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES), "Pixsee");
 		// This location works best if you want the created images to be shared
 		// between applications and persist after your app has been uninstalled.
 
@@ -165,6 +166,39 @@ class CameraHelper {
 			if (!mediaStorageDir.mkdirs()) {
 				Log.d("Playsnap", "failed to create directory");
 				throw new RuntimeException("Can't create file on external storage");
+			}
+		}
+
+		// Create a media file name
+		String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
+		File mediaFile;
+		if (type == MEDIA_TYPE_IMAGE) {
+			mediaFile = new File(mediaStorageDir.getPath() + File.separator + "IMG_" + timeStamp + ".jpg");
+		} else if (type == MEDIA_TYPE_VIDEO) {
+			mediaFile = new File(mediaStorageDir.getPath() + File.separator + "VID_" + timeStamp + ".mp4");
+		} else {
+			throw new IllegalArgumentException("Parameter type must be MEDIA_TYPE_IMAGE or MEDIA_TYPE_VIDEO");
+		}
+
+		return mediaFile;
+	}
+
+	/**
+	 * Creates a media file in the {@param directory} directory parameter. The directory
+	 * is persistent and the user should manage it. For public and convenient method,
+	 * use {@link #getOutputMediaFile(int)}
+	 *
+	 * @param type      Media type. Can be video or image.
+	 * @param directory Directory where to save images
+	 * @return A file object pointing to the newly created file.
+	 */
+	public static File getOutputMediaFile(@MediaType int type, @NonNull File directory) {
+		File mediaStorageDir = new File(directory.toURI());
+		// Create the storage directory if it does not exist
+		if (!mediaStorageDir.exists()) {
+			if (!mediaStorageDir.mkdirs()) {
+				Log.d("Pixsee camera", "failed to create directory");
+				throw new RuntimeException("Can't create file on storage");
 			}
 		}
 

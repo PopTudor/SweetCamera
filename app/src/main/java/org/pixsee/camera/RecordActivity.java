@@ -53,14 +53,20 @@ public class RecordActivity extends AppCompatActivity implements View.OnClickLis
     public void onClick(View v) {
         switch (v.getId()) {
             case R.id.startRecording:
+//                File file = new File("/storage/emulated/0/Pictures/XXX");
+//                camera.saveDir(file);
                 camera.startRecording();
-                chronometer.setBase(SystemClock.elapsedRealtime());
-                chronometer.start();
+                startChronometer();
                 break;
             case R.id.stopRecording:
                 camera.stopRecording();
                 chronometer.stop();
                 break;
         }
+    }
+
+    private void startChronometer() {
+        chronometer.setBase(SystemClock.elapsedRealtime());
+        chronometer.start();
     }
 }

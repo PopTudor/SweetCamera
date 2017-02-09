@@ -14,6 +14,11 @@ class FeatureChecker {
 		mPackageManager = packageManager;
 	}
 
+	public static void checkNotNull(Object notNullObject) {
+		if (notNullObject == null)
+			throw new IllegalArgumentException("Argument must not be null");
+	}
+
 	boolean hasCamera(final int camera) {
 		switch (camera) {
 			case Camera.CameraInfo.CAMERA_FACING_FRONT:

@@ -170,7 +170,7 @@ class CameraConfiguration implements com.pixsee.camera.Camera.CameraListener {
     }
 
     @Override
-    public void cameraAvailable(Camera camera) {
+    public void cameraAvailable(@NonNull Camera camera) {
         mCamera = camera;
     }
 }

@@ -34,7 +34,7 @@ public class StartStopPreview extends AppCompatActivity implements View.OnClickL
         super.onResume();
         camera.openAndStart(CameraFacing.FRONT, preview);
         // or
-//        camera.open();
+//        camera.open(CameraFacing.FRONT);
 //        camera.startPreview(preview);
     }
 

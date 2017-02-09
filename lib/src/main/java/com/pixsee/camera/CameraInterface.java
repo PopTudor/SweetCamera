@@ -15,5 +15,5 @@ interface CameraInterface {
 
     void close();
 
-    boolean isOpened();
+    boolean isOpen();
 }

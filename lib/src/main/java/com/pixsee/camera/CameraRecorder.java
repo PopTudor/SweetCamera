@@ -20,14 +20,14 @@ import static android.content.ContentValues.TAG;
 class CameraRecorder implements com.pixsee.camera.Camera.CameraListener {
     private final CameraConfiguration configuration;
     private Camera mCamera;
-    private File mOutputFile;
+    private File mOutputFile = null;
     private MediaRecorder mMediaRecorder;
     /* static because we can have multiple Camera but we record only one camera */
     private boolean isRecording;
     private boolean isPrepared;
 
 
-    public CameraRecorder(final CameraConfiguration configuration) {
+    CameraRecorder(final CameraConfiguration configuration) {
         this.configuration = configuration;
         mMediaRecorder = new MediaRecorder();
     }
@@ -54,7 +54,10 @@ class CameraRecorder implements com.pixsee.camera.Camera.CameraListener {
         mMediaRecorder.setProfile(profile);
 
         // Step 4: Set output file
-        mOutputFile = CameraHelper.getOutputMediaFile(MediaStore.Files.FileColumns.MEDIA_TYPE_VIDEO);
+        if (mOutputFile == null)
+            mOutputFile = CameraHelper.getOutputMediaFile(MediaStore.Files.FileColumns.MEDIA_TYPE_VIDEO);
+        else
+            mOutputFile = CameraHelper.getOutputMediaFile(MediaStore.Files.FileColumns.MEDIA_TYPE_VIDEO, mOutputFile);
         mMediaRecorder.setOutputFile(mOutputFile.getPath());
         // END_INCLUDE (configure_media_recorder)
 
@@ -81,18 +84,18 @@ class CameraRecorder implements com.pixsee.camera.Camera.CameraListener {
             releaseMediaRecorder();
     }
 
-    public void stop() {
+    void stop() {
         if (isRecording) {
             mMediaRecorder.stop();
             isRecording = false;
         }
     }
 
-    public boolean isRecording() {
+    boolean isRecording() {
         return isRecording;
     }
 
-    public void releaseMediaRecorder() {
+    void releaseMediaRecorder() {
         if (mMediaRecorder != null) {
             isPrepared = false;
             stop();
@@ -108,6 +111,7 @@ class CameraRecorder implements com.pixsee.camera.Camera.CameraListener {
             } catch (IOException e) {
                 e.printStackTrace();
             }
+            mOutputFile = null;
         }
     }
 
@@ -116,7 +120,11 @@ class CameraRecorder implements com.pixsee.camera.Camera.CameraListener {
     }
 
     @Override
-    public void cameraAvailable(Camera camera) {
+    public void cameraAvailable(@NonNull Camera camera) {
         mCamera = camera;
+    }
+
+    void saveDir(File file) {
+        mOutputFile = file;
     }
 }

@@ -70,7 +70,7 @@ final class CameraWrapper implements CameraInterface {
     }
 
     @Override
-    public boolean isOpened() {
+    public boolean isOpen() {
         return isOpened;
     }
 
