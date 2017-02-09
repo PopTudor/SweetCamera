@@ -10,6 +10,9 @@ import android.util.Log;
 import android.view.TextureView;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
 import static android.R.attr.orientation;
 import static android.content.ContentValues.TAG;
@@ -31,6 +34,8 @@ public class Camera {
     private TextureView mPreview;
     private android.hardware.Camera mCamera;
 
+    private List<CameraListener> listeners = new ArrayList<>();
+
     private CameraConfiguration mConfiguration;
     private FeatureChecker featureChecker;
     private CameraRecorder mCameraRecorder;
@@ -47,6 +52,8 @@ public class Camera {
         mHandler = new Handler(mHandlerThread.getLooper());
         featureChecker = new FeatureChecker(mActivity.getPackageManager());
         mConfiguration = new CameraConfiguration(mActivity);
+        mCameraRecorder = new CameraRecorder(mConfiguration);
+        attach(mConfiguration, mCameraRecorder);
     }
 
     /**
@@ -66,12 +73,10 @@ public class Camera {
             @Override
             public void run() {
                 mCamera = getCamera(facing);
+                notifyListeners(mCamera);
                 mConfiguration.setCameraFacing(facing);
-                mConfiguration.setCamera(mCamera);
-                mConfiguration.setZoom(0);
                 mConfiguration.configurePreviewSize(mPreview, orientation);
                 mConfiguration.configureRotation();
-                mCameraRecorder = new CameraRecorder(mCamera, mConfiguration);
             }
         });
     }
@@ -190,5 +195,23 @@ public class Camera {
                     return CameraHelper.getDefaultCameraInstance();
             }
         }
+    }
+
+    public void attach(CameraListener cameraListener) {
+        listeners.add(cameraListener);
+    }
+
+    public void attach(CameraListener... cameraListeners) {
+        Collections.addAll(listeners, cameraListeners);
+    }
+
+    private void notifyListeners(android.hardware.Camera mCamera) {
+        for (CameraListener listener : listeners) {
+            listener.cameraAvailable(mCamera);
+        }
+    }
+
+    interface CameraListener {
+        void cameraAvailable(android.hardware.Camera camera);
     }
 }

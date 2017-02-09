@@ -17,7 +17,7 @@ import static android.content.ContentValues.TAG;
  * Created by Tudor Pop on 2/1/2017.
  */
 
-class CameraRecorder {
+class CameraRecorder implements com.pixsee.camera.Camera.CameraListener {
     private final CameraConfiguration configuration;
     private Camera mCamera;
     private File mOutputFile;
@@ -27,8 +27,7 @@ class CameraRecorder {
     private boolean isPrepared;
 
 
-    public CameraRecorder(final Camera camera, final CameraConfiguration configuration) {
-        mCamera = camera;
+    public CameraRecorder(final CameraConfiguration configuration) {
         this.configuration = configuration;
     }
 
@@ -41,6 +40,7 @@ class CameraRecorder {
 
         // BEGIN_INCLUDE (configure_media_recorder)
         mMediaRecorder = new MediaRecorder();
+        mMediaRecorder.setOrientationHint(configuration.getRotation());
 
         // Step 1: Unlock and set camera to MediaRecorder
         mCamera.unlock();
@@ -111,5 +111,10 @@ class CameraRecorder {
 
     public boolean isPrepared() {
         return isPrepared;
+    }
+
+    @Override
+    public void cameraAvailable(Camera camera) {
+        mCamera = camera;
     }
 }

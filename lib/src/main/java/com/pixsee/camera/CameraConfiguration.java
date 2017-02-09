@@ -21,7 +21,7 @@ import static com.pixsee.camera.CameraFacing.FRONT;
  * Keeps all the camera configurations
  * Created by Tudor Pop on 2/2/2017.
  */
-public class CameraConfiguration {
+public class CameraConfiguration implements com.pixsee.camera.Camera.CameraListener {
     @NonNull
     private final Activity mActivity;
     protected Camera mCamera;
@@ -37,10 +37,6 @@ public class CameraConfiguration {
 
     public Camera getCamera() {
         return mCamera;
-    }
-
-    public void setCamera(@NonNull Camera mCamera) {
-        this.mCamera = mCamera;
     }
 
     public void configureRotation() {
@@ -171,5 +167,10 @@ public class CameraConfiguration {
 
     public void setOrientation(int orientation) {
         this.orientation = orientation;
+    }
+
+    @Override
+    public void cameraAvailable(Camera camera) {
+        mCamera = camera;
     }
 }
