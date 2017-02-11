@@ -1,6 +1,7 @@
 package com.pixsee.camera;
 
 import android.app.Activity;
+import android.hardware.Camera.ShutterCallback;
 import android.os.Handler;
 import android.os.HandlerThread;
 import android.support.annotation.NonNull;
@@ -14,6 +15,7 @@ import java.util.Collections;
 import java.util.List;
 
 import static android.R.attr.orientation;
+import static android.hardware.Camera.PictureCallback;
 
 /**
  * Created by Tudor Pop on 2/1/2017.
@@ -150,6 +152,15 @@ final public class Camera implements CameraInterface {
             }
             mCameraWrapper.close();
         }
+    }
+
+    public void takePicture(ShutterCallback shutterCallback, PictureCallback raw, PictureCallback jpeg) {
+        mCameraWrapper.getCamera().takePicture(shutterCallback, raw, jpeg);
+    }
+
+    public void takePicture(ShutterCallback shutterCallback, PictureCallback raw, PictureCallback postView,
+                            PictureCallback jpeg) {
+        mCameraWrapper.getCamera().takePicture(shutterCallback, raw, postView, jpeg);
     }
 
     @Override

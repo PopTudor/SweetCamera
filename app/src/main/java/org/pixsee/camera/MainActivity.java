@@ -4,7 +4,6 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
-import android.view.View;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -17,36 +16,11 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onPostCreate(@Nullable Bundle savedInstanceState) {
         super.onPostCreate(savedInstanceState);
-        findViewById(R.id.simplePreviewButton).setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                startActivity(SimplePreview.class);
-            }
-        });
-        findViewById(R.id.simpleTextureView).setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                startActivity(SimpleTextureViewListenerActivity.class);
-            }
-        });
-        findViewById(R.id.startStop).setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                startActivity(StartStopPreview.class);
-            }
-        });
-        findViewById(R.id.record).setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                startActivity(RecordActivity.class);
-            }
-        });
-        findViewById(R.id.photos).setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                startActivity(PhotosActivity.class);
-            }
-        });
+        findViewById(R.id.simplePreviewButton).setOnClickListener(v -> startActivity(SimplePreview.class));
+        findViewById(R.id.simpleTextureView).setOnClickListener(v -> startActivity(SimpleTextureViewListenerActivity.class));
+        findViewById(R.id.startStop).setOnClickListener(v -> startActivity(StartStopPreview.class));
+        findViewById(R.id.record).setOnClickListener(v -> startActivity(RecordActivity.class));
+        findViewById(R.id.photos).setOnClickListener(v -> startActivity(PhotosActivity.class));
     }
 
     public void startActivity(Class param) {

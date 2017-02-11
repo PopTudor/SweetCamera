@@ -41,7 +41,7 @@
         android:text="Start - stop camera" />
 
     <Button
-        android:id="@+id/button2"
+        android:id="@+id/record"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_alignParentLeft="true"
@@ -55,6 +55,6 @@
         android:layout_height="wrap_content"
         android:layout_alignParentLeft="true"
         android:layout_alignParentStart="true"
-        android:layout_below="@+id/button2"
+        android:layout_below="@+id/record"
         android:text="photo" />
 </RelativeLayout>
