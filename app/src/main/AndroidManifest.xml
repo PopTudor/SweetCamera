@@ -25,7 +25,8 @@
             </intent-filter>
         </activity>
         <activity android:name=".StartStopPreview" />
-        <activity android:name=".RecordActivity"></activity>
+        <activity android:name=".RecordActivity" />
+        <activity android:name=".PhotosActivity"></activity>
     </application>
 
 </manifest>

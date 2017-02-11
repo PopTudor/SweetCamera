@@ -19,7 +19,7 @@ import static android.R.attr.orientation;
  * Created by Tudor Pop on 2/1/2017.
  */
 
-public class Camera implements CameraInterface {
+final public class Camera implements CameraInterface {
     private static final HandlerThread mHandlerThread = new HandlerThread("openCameraAndVideoRecorder", Thread.MAX_PRIORITY);
     private static final Object sObject = new Object();
     private final Handler mHandler;
@@ -169,11 +169,11 @@ public class Camera implements CameraInterface {
         return mConfiguration.getMaxZoom();
     }
 
-    public void attach(@NonNull CameraListener cameraListener) {
+    void attach(@NonNull CameraListener cameraListener) {
         listeners.add(cameraListener);
     }
 
-    public void attach(@NonNull CameraListener... cameraListeners) {
+    void attach(@NonNull CameraListener... cameraListeners) {
         Collections.addAll(listeners, cameraListeners);
     }
 

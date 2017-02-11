@@ -41,6 +41,12 @@ public class MainActivity extends AppCompatActivity {
                 startActivity(RecordActivity.class);
             }
         });
+        findViewById(R.id.photos).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                startActivity(PhotosActivity.class);
+            }
+        });
     }
 
     public void startActivity(Class param) {
