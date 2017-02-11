@@ -96,6 +96,14 @@ final public class Camera implements CameraInterface {
         startPreview();
     }
 
+    public boolean isFrontFacing() {
+        return mConfiguration.getCameraFacing() == CameraFacing.FRONT;
+    }
+
+    public boolean isBackFacing() {
+        return mConfiguration.getCameraFacing() == CameraFacing.BACK;
+    }
+
     /**
      * Open the camera async
      */

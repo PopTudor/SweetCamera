@@ -3,6 +3,7 @@ package org.pixsee.camera;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.Bundle;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import android.widget.ImageButton;
@@ -17,6 +18,7 @@ public class PhotosActivity extends AppCompatActivity implements View.OnClickLis
     AutoFitTextureView preview;
     ImageButton takePhoto;
     ImageView picture;
+    ImageView switchCamera;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -31,6 +33,32 @@ public class PhotosActivity extends AppCompatActivity implements View.OnClickLis
             v.setVisibility(View.GONE);
             camera.startPreview(preview);
         });
+
+        switchCamera = (ImageView) findViewById(R.id.switchCamera);
+        switchCamera.setOnClickListener(v -> {
+            switchCameraAction();
+        });
+
+        setupBitmaps();
+    }
+
+    private void setupBitmaps() {
+
+    }
+
+    private void switchCameraAction() {
+        camera.switchCamera();
+        if (camera.isFrontFacing())
+            switchCamera.animate().rotationYBy(90).alpha(0).withEndAction(() -> {
+                switchCamera.setImageDrawable(ContextCompat.getDrawable(this, R.drawable.ic_camera_rear_black_24dp));
+                switchCamera.animate().rotationYBy(90).alphaBy(1).start();
+            });
+        else {
+            switchCamera.animate().rotationYBy(90).alpha(0).withEndAction(() -> {
+                switchCamera.setImageDrawable(ContextCompat.getDrawable(this, R.drawable.ic_camera_front_black_24dp));
+                switchCamera.animate().rotationYBy(90).alphaBy(1).start();
+            });
+        }
     }
 
     @Override
