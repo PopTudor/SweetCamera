@@ -29,10 +29,11 @@ class CameraRecorder implements com.pixsee.camera.Camera.CameraListener {
 
     CameraRecorder(final CameraConfiguration configuration) {
         this.configuration = configuration;
-        mMediaRecorder = new MediaRecorder();
     }
 
-    private void prepareVideoRecorder(@NonNull final TextureView preview) {
+    private boolean prepareVideoRecorder(@NonNull final TextureView preview) {
+        configuration.setRecordHint(true);
+        mMediaRecorder = new MediaRecorder();
         Camera.Size optimalSize = configuration.getOptimalSize(preview);
         // Use the same size for recording profile.
         CamcorderProfile profile = CamcorderProfile.get(CamcorderProfile.QUALITY_HIGH);
@@ -40,7 +41,6 @@ class CameraRecorder implements com.pixsee.camera.Camera.CameraListener {
         profile.videoFrameHeight = optimalSize.height;
 
         // BEGIN_INCLUDE (configure_media_recorder)
-        mMediaRecorder.setOrientationHint(configuration.getRotation());
 
         // Step 1: Unlock and set camera to MediaRecorder
         mCamera.unlock();
@@ -49,6 +49,8 @@ class CameraRecorder implements com.pixsee.camera.Camera.CameraListener {
         // Step 2: Set sources
         mMediaRecorder.setAudioSource(MediaRecorder.AudioSource.DEFAULT);
         mMediaRecorder.setVideoSource(MediaRecorder.VideoSource.CAMERA);
+//        mMediaRecorder.setOutputFormat(MediaRecorder.OutputFormat.MPEG_4);
+        mMediaRecorder.setOrientationHint(configuration.getRotation());
 
         // Step 3: Set a CamcorderProfile (requires API Level 8 or higher)
         mMediaRecorder.setProfile(profile);
@@ -56,7 +58,7 @@ class CameraRecorder implements com.pixsee.camera.Camera.CameraListener {
         // Step 4: Set output file
         if (mOutputFile == null)
             mOutputFile = CameraHelper.getOutputMediaFile(MediaStore.Files.FileColumns.MEDIA_TYPE_VIDEO);
-        else
+        else if (mOutputFile.isDirectory())
             mOutputFile = CameraHelper.getOutputMediaFile(MediaStore.Files.FileColumns.MEDIA_TYPE_VIDEO, mOutputFile);
         mMediaRecorder.setOutputFile(mOutputFile.getPath());
         // END_INCLUDE (configure_media_recorder)
@@ -72,12 +74,12 @@ class CameraRecorder implements com.pixsee.camera.Camera.CameraListener {
             Log.d(TAG, "IOException preparing MediaRecorder: " + e.getMessage());
             releaseMediaRecorder();
         }
+        return isPrepared;
     }
 
     public void start(final TextureView preview) {
         if (isRecording) return;
-        prepareVideoRecorder(preview);
-        if (isPrepared) {
+        if (prepareVideoRecorder(preview)) {
             mMediaRecorder.start();
             isRecording = true;
         } else
@@ -88,6 +90,7 @@ class CameraRecorder implements com.pixsee.camera.Camera.CameraListener {
         if (isRecording) {
             mMediaRecorder.stop();
             isRecording = false;
+            mOutputFile = null;
         }
     }
 
@@ -111,7 +114,6 @@ class CameraRecorder implements com.pixsee.camera.Camera.CameraListener {
             } catch (IOException e) {
                 e.printStackTrace();
             }
-            mOutputFile = null;
         }
     }
 

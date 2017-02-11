@@ -25,13 +25,11 @@ final public class Camera implements CameraInterface {
     private static final HandlerThread mHandlerThread = new HandlerThread("openCameraAndVideoRecorder", Thread.MAX_PRIORITY);
     private static final Object sObject = new Object();
     private final Handler mHandler;
+    private final CameraConfiguration mConfiguration;
+    private final CameraRecorder mCameraRecorder;
     private CameraWrapper mCameraWrapper;
     private TextureView mPreview;
-
     private List<CameraListener> listeners = new ArrayList<>();
-
-    private CameraConfiguration mConfiguration;
-    private CameraRecorder mCameraRecorder;
 
     /**
      * Activity is needed for correct orientation of the camera
@@ -97,11 +95,11 @@ final public class Camera implements CameraInterface {
     }
 
     public boolean isFrontFacing() {
-        return mConfiguration.getCameraFacing() == CameraFacing.FRONT;
+        return mConfiguration.isFrontFacing();
     }
 
     public boolean isBackFacing() {
-        return mConfiguration.getCameraFacing() == CameraFacing.BACK;
+        return mConfiguration.isBackFacing();
     }
 
     /**
@@ -117,7 +115,12 @@ final public class Camera implements CameraInterface {
     }
 
     public void startRecording() {
-        mCameraRecorder.start(mPreview);
+        mHandler.post(new Runnable() {
+            @Override
+            public void run() {
+                mCameraRecorder.start(mPreview);
+            }
+        });
     }
 
     /**

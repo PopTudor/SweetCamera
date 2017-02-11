@@ -2,18 +2,14 @@ package org.pixsee.camera;
 
 import android.os.Bundle;
 import android.os.SystemClock;
-import android.support.v7.app.AppCompatActivity;
-import android.view.TextureView;
 import android.view.View;
 import android.widget.Button;
 import android.widget.Chronometer;
+import android.widget.ImageView;
 
-import com.pixsee.camera.Camera;
-import com.pixsee.camera.CameraFacing;
+import com.pixsee.camera.ui.AutoFitTextureView;
 
-public class RecordActivity extends AppCompatActivity implements View.OnClickListener {
-    Camera camera;
-    TextureView preview;
+public class RecordActivity extends BaseActivity implements View.OnClickListener {
     Button start;
     Button stop;
     Chronometer chronometer;
@@ -22,31 +18,13 @@ public class RecordActivity extends AppCompatActivity implements View.OnClickLis
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_record);
-        camera = new Camera(this);
-        preview = (TextureView) findViewById(R.id.preview);
+        preview = (AutoFitTextureView) findViewById(R.id.preview);
         start = (Button) findViewById(R.id.startRecording);
         stop = (Button) findViewById(R.id.stopRecording);
         chronometer = (Chronometer) findViewById(R.id.chronometer);
+        switchCamera = (ImageView) findViewById(R.id.switchImageView);
         start.setOnClickListener(this);
         stop.setOnClickListener(this);
-    }
-
-    @Override
-    protected void onResume() {
-        super.onResume();
-        camera.openAndStart(CameraFacing.FRONT, preview);
-        // or
-//        camera.open();
-//        camera.startPreview(preview);
-    }
-
-    @Override
-    protected void onPause() {
-        super.onPause();
-        camera.close();
-        // or
-//        camera.stopPreview();
-//        camera.close();
     }
 
     @Override

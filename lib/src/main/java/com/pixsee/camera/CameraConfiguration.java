@@ -24,22 +24,22 @@ import static com.pixsee.camera.CameraFacing.FRONT;
 class CameraConfiguration implements com.pixsee.camera.Camera.CameraListener {
     @NonNull
     private final Activity mActivity;
-    protected Camera mCamera;
+    private Camera mCamera;
     @CameraFacing
     private int cameraFacing = FRONT;
     private int orientation = Configuration.ORIENTATION_PORTRAIT;
     private int rotation;
 
 
-    public CameraConfiguration(@NonNull Activity activity) {
+    CameraConfiguration(@NonNull Activity activity) {
         mActivity = activity;
     }
 
-    public Camera getCamera() {
+    Camera getCamera() {
         return mCamera;
     }
 
-    public void configureRotation() {
+    void configureRotation() {
         int rotation = mActivity.getWindowManager().getDefaultDisplay().getRotation();
         int degrees = 0;
         switch (rotation) {
@@ -61,11 +61,9 @@ class CameraConfiguration implements com.pixsee.camera.Camera.CameraListener {
         int cameraRotationOffset = camInfo.orientation;
 
         int displayRotation;
-        if (isFrontFacingCam(cameraFacing)) {
+        if (isFrontFacing()) {
             displayRotation = (cameraRotationOffset + degrees) % 360;
-            displayRotation = (360 - displayRotation) % 360; // compensate
-            // the
-            // mirror
+            displayRotation = (360 - displayRotation) % 360; // compensate the mirror
         } else { // back-facing
             displayRotation = (cameraRotationOffset - degrees + 360) % 360;
         }
@@ -76,7 +74,7 @@ class CameraConfiguration implements com.pixsee.camera.Camera.CameraListener {
             throw new RuntimeException("Camera configurations must have a camera set when one is available");
         mCamera.setDisplayOrientation(displayRotation);
 
-        if (isFrontFacingCam(cameraFacing)) {
+        if (isFrontFacing()) {
             this.rotation = (360 + cameraRotationOffset + degrees) % 360;
         } else {
             this.rotation = (360 + cameraRotationOffset - degrees) % 360;
@@ -87,10 +85,6 @@ class CameraConfiguration implements com.pixsee.camera.Camera.CameraListener {
         Camera.Parameters parameters = mCamera.getParameters();
         parameters.setRotation(this.rotation);
         mCamera.setParameters(parameters);
-    }
-
-    protected boolean isFrontFacingCam(int cameraFacing) {
-        return cameraFacing == Camera.CameraInfo.CAMERA_FACING_FRONT;
     }
 
     public int getRotation() {
@@ -119,7 +113,7 @@ class CameraConfiguration implements com.pixsee.camera.Camera.CameraListener {
         mCamera.setParameters(parameters);
     }
 
-    public Camera.Size getOptimalSize(@NonNull TextureView preview) {
+    Camera.Size getOptimalSize(@NonNull TextureView preview) {
         // We need to make sure that our preview and recording video size are supported by the
         // camera. Query camera to find all the sizes and choose the optimal size given the
         // dimensions of our preview surface.
@@ -157,7 +151,7 @@ class CameraConfiguration implements com.pixsee.camera.Camera.CameraListener {
         this.cameraFacing = mCameraFacing;
     }
 
-    public void switchFacing() {
+    void switchFacing() {
         setCameraFacing(cameraFacing == FRONT ? BACK : FRONT);
     }
 
@@ -172,5 +166,19 @@ class CameraConfiguration implements com.pixsee.camera.Camera.CameraListener {
     @Override
     public void cameraAvailable(@NonNull Camera camera) {
         mCamera = camera;
+    }
+
+    public boolean isFrontFacing() {
+        return cameraFacing == CameraFacing.FRONT;
+    }
+
+    boolean isBackFacing() {
+        return cameraFacing == CameraFacing.BACK;
+    }
+
+    void setRecordHint(boolean hint) {
+        Camera.Parameters parameters = mCamera.getParameters();
+        parameters.setRecordingHint(hint);
+        mCamera.setParameters(parameters);
     }
 }
