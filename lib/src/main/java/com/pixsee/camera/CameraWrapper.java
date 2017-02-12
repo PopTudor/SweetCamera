@@ -1,7 +1,9 @@
 package com.pixsee.camera;
 
 import android.app.Activity;
+import android.graphics.ImageFormat;
 import android.graphics.SurfaceTexture;
+import android.hardware.Camera;
 import android.support.annotation.NonNull;
 import android.util.Log;
 import android.view.TextureView;
@@ -21,6 +23,9 @@ final class CameraWrapper implements CameraInterface {
     private static boolean isOpened = false;
     private android.hardware.Camera mCamera;
     private FeatureChecker featureChecker;
+    private byte[] mBuffer;
+    private Camera.PreviewCallback callback;
+    private Size size;
 
     public CameraWrapper(Activity activity) {
         featureChecker = new FeatureChecker(activity.getPackageManager());
@@ -51,7 +56,9 @@ final class CameraWrapper implements CameraInterface {
 
     @Override
     public void startPreview(@NonNull TextureView preview) {
+        size = new Size(preview.getWidth(), preview.getHeight());
         startPreviewSurfaceTexture(preview.getSurfaceTexture());
+        addCallbacks();
     }
 
     @Override
@@ -74,7 +81,7 @@ final class CameraWrapper implements CameraInterface {
         return isOpened;
     }
 
-    void startPreviewSurfaceTexture(@NonNull final SurfaceTexture previewTexture) {
+    private void startPreviewSurfaceTexture(@NonNull final SurfaceTexture previewTexture) {
         try {
             // Requires API level 11+, For backward compatibility use {@link setPreviewDisplay}
             // with {@link SurfaceView}
@@ -87,5 +94,30 @@ final class CameraWrapper implements CameraInterface {
 
     android.hardware.Camera getCamera() {
         return mCamera;
+    }
+
+    public void previewCallback(final Camera.PreviewCallback callback) {
+        this.callback = callback;
+    }
+
+    private void addCallbacks() {
+        setupBuffer();
+        mCamera.addCallbackBuffer(mBuffer);
+        mCamera.setPreviewCallbackWithBuffer(new Camera.PreviewCallback() {
+            @Override
+            public void onPreviewFrame(byte[] data, Camera camera) {
+                callback.onPreviewFrame(data, camera);
+                if (mCamera != null)
+                    mCamera.addCallbackBuffer(mBuffer);
+            }
+        });
+    }
+
+    private void setupBuffer() {
+        int size = this.size.getWidth() * this.size.getHeight();
+        size = size * ImageFormat.getBitsPerPixel(mCamera.getParameters().getPreviewFormat()) / 8;
+        if (mBuffer != null && size == mBuffer.length)
+            return;
+        mBuffer = new byte[size];
     }
 }

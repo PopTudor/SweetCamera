@@ -14,7 +14,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import static android.R.attr.orientation;
 import static android.hardware.Camera.PictureCallback;
 
 /**
@@ -29,6 +28,7 @@ final public class Camera implements CameraInterface {
     private final CameraRecorder mCameraRecorder;
     private CameraWrapper mCameraWrapper;
     private TextureView mPreview;
+    private Size size;
     private List<CameraListener> listeners = new ArrayList<>();
 
     /**
@@ -60,14 +60,18 @@ final public class Camera implements CameraInterface {
         if (isOpen()) {
             throw new RuntimeException("Camera is already opened!");
         }
+        mCameraWrapper.open(facing);
+        notifyListeners(mCameraWrapper.getCamera());
+        mConfiguration.setCameraFacing(facing);
+        mConfiguration.configureRotation();
+    }
+
+    public void openAsync(@CameraFacing final int facing) {
+        if (isOpen()) throw new RuntimeException("Camera is already opened!");
         mHandler.post(new Runnable() {
             @Override
             public void run() {
-                mCameraWrapper.open(facing);
-                notifyListeners(mCameraWrapper.getCamera());
-                mConfiguration.setCameraFacing(facing);
-                mConfiguration.configurePreviewSize(mPreview, orientation);
-                mConfiguration.configureRotation();
+                open(facing);
             }
         });
     }
@@ -91,7 +95,13 @@ final public class Camera implements CameraInterface {
     @Override
     public void startPreview(@NonNull final TextureView preview) {
         mPreview = preview;
-        startPreview();
+        mHandler.post(new Runnable() {
+            @Override
+            public void run() {
+                mConfiguration.configurePreviewSize(mPreview);
+                mCameraWrapper.startPreview(preview);
+            }
+        });
     }
 
     public boolean isFrontFacing() {
@@ -102,17 +112,6 @@ final public class Camera implements CameraInterface {
         return mConfiguration.isBackFacing();
     }
 
-    /**
-     * Open the camera async
-     */
-    private void startPreview() {
-        mHandler.post(new Runnable() {
-            @Override
-            public void run() {
-                mCameraWrapper.startPreviewSurfaceTexture(mPreview.getSurfaceTexture());
-            }
-        });
-    }
 
     public void startRecording() {
         mHandler.post(new Runnable() {
@@ -151,7 +150,7 @@ final public class Camera implements CameraInterface {
         close();
         mConfiguration.switchFacing();
         open();
-        startPreview();
+        startPreview(mPreview);
     }
 
     @Override
@@ -172,6 +171,10 @@ final public class Camera implements CameraInterface {
     public void takePicture(ShutterCallback shutterCallback, PictureCallback raw, PictureCallback postView,
                             PictureCallback jpeg) {
         mCameraWrapper.getCamera().takePicture(shutterCallback, raw, postView, jpeg);
+    }
+
+    public void addPreviewCallback(android.hardware.Camera.PreviewCallback callback) {
+        mCameraWrapper.previewCallback(callback);
     }
 
     @Override
@@ -208,4 +211,5 @@ final public class Camera implements CameraInterface {
     interface CameraListener {
         void cameraAvailable(@NonNull android.hardware.Camera camera);
     }
+
 }

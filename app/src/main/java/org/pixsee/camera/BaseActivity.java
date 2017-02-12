@@ -37,6 +37,10 @@ public class BaseActivity extends AppCompatActivity {
         // or
 //        camera.open();
 //        camera.startPreview(preview);
+        camera.addPreviewCallback((data, camera1) -> {
+            System.out.println(data.length);
+        });
+
     }
 
     @Override
