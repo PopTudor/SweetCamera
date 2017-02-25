@@ -17,7 +17,7 @@ import static android.content.ContentValues.TAG;
  * Created by Tudor Pop on 2/1/2017.
  */
 
-class CameraRecorder implements com.pixsee.camera.Camera.CameraListener {
+class CameraRecorder implements CameraWrapper.CameraListener {
     private final CameraConfiguration configuration;
     private Camera mCamera;
     private File mOutputFile = null;

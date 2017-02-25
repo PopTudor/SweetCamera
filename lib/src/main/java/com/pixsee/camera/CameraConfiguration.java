@@ -20,7 +20,7 @@ import static com.pixsee.camera.CameraFacing.FRONT;
  * Keeps all the camera configurations
  * Created by Tudor Pop on 2/2/2017.
  */
-class CameraConfiguration implements com.pixsee.camera.Camera.CameraListener {
+public final class CameraConfiguration implements CameraWrapper.CameraListener {
     @NonNull
     private final Activity mActivity;
     private Camera mCamera;

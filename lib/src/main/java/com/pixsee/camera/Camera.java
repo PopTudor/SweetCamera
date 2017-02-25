@@ -9,9 +9,6 @@ import android.support.v4.app.Fragment;
 import android.view.TextureView;
 
 import java.io.File;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
 
 
 /**
@@ -26,8 +23,6 @@ final public class Camera implements CameraInterface {
     private final CameraRecorder mCameraRecorder;
     private CameraWrapper mCameraWrapper;
     private TextureView mPreview;
-    private Size size;
-    private List<CameraListener> listeners = new ArrayList<>();
 
     /**
      * Activity is needed for correct orientation of the camera
@@ -41,7 +36,7 @@ final public class Camera implements CameraInterface {
         mConfiguration = new CameraConfiguration(activity);
         mCameraRecorder = new CameraRecorder(mConfiguration);
         mCameraWrapper = new CameraWrapper(activity, mConfiguration);
-        attach(mConfiguration, mCameraRecorder);
+        mCameraWrapper.attach(mConfiguration, mCameraRecorder);
     }
 
     /**
@@ -55,13 +50,7 @@ final public class Camera implements CameraInterface {
 
     @Override
     synchronized public void open(@CameraFacing final int facing) {
-        if (isOpen()) {
-            throw new RuntimeException("Camera is already opened!");
-        }
-        mCameraWrapper.open(facing);
-        notifyListeners(mCameraWrapper.getCamera());
-        mConfiguration.setCameraFacing(facing);
-        mConfiguration.configureRotation();
+        new OpenCameraCommand(mCameraWrapper, mConfiguration, facing).execute();
     }
 
     /**
@@ -71,7 +60,7 @@ final public class Camera implements CameraInterface {
      * @param preview the "sheet" where to display camera preview frames
      */
     public void openAndStart(@CameraFacing final int facing, @NonNull final TextureView preview) {
-        if (mCameraWrapper.isOpen()) return;
+        if (isOpen()) return;
         mHandler.post(new Runnable() {
             @Override
             public void run() {
@@ -91,8 +80,7 @@ final public class Camera implements CameraInterface {
         mHandler.post(new Runnable() {
             @Override
             public void run() {
-                mConfiguration.configurePreviewSize(preview);
-                mCameraWrapper.startPreview(preview);
+                new StartPreviewCommand(mCameraWrapper, mConfiguration, preview).execute();
             }
         });
     }
@@ -139,7 +127,6 @@ final public class Camera implements CameraInterface {
     }
 
     public void switchCamera() {
-        stopPreview();
         close();
         mConfiguration.switchFacing();
         open();
@@ -149,11 +136,7 @@ final public class Camera implements CameraInterface {
     @Override
     public void close() {
         synchronized (sObject) {
-            stopPreview();
-            if (isRecording()) {
-                mCameraRecorder.releaseMediaRecorder();
-            }
-            mCameraWrapper.close();
+            new CloseCameraCommand(mCameraWrapper, mCameraRecorder, mConfiguration).execute();
         }
     }
 
@@ -194,24 +177,6 @@ final public class Camera implements CameraInterface {
 
     public int getMaxZoom() {
         return mConfiguration.getMaxZoom();
-    }
-
-    void attach(@NonNull CameraListener cameraListener) {
-        listeners.add(cameraListener);
-    }
-
-    void attach(@NonNull CameraListener... cameraListeners) {
-        Collections.addAll(listeners, cameraListeners);
-    }
-
-    private void notifyListeners(@NonNull android.hardware.Camera mCamera) {
-        for (CameraListener listener : listeners) {
-            listener.cameraAvailable(mCamera);
-        }
-    }
-
-    interface CameraListener {
-        void cameraAvailable(@NonNull android.hardware.Camera camera);
     }
 
 }

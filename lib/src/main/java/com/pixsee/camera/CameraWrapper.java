@@ -13,6 +13,9 @@ import android.util.Log;
 import android.view.TextureView;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
 import static android.content.ContentValues.TAG;
 import static com.pixsee.camera.CameraFacing.BACK;
@@ -22,9 +25,10 @@ import static com.pixsee.camera.CameraFacing.FRONT;
  * Created by Tudor on 09-Feb-17.
  */
 
-final class CameraWrapper implements CameraInterface {
+public final class CameraWrapper implements CameraInterface {
     private static final Object lock = new Object();
     private static boolean isOpened = false;
+    private final List<CameraListener> listeners = new ArrayList<>();
     private final Activity activity;
     private android.hardware.Camera mCamera;
     private FeatureChecker featureChecker;
@@ -85,6 +89,7 @@ final class CameraWrapper implements CameraInterface {
                 default:
                     mCamera = CameraHelper.getDefaultCameraInstance();
             }
+            notifyListeners(mCamera);
         }
     }
 
@@ -123,10 +128,6 @@ final class CameraWrapper implements CameraInterface {
         } catch (IOException e) {
             Log.e(TAG, "Surface texture is unavailable or unsuitable" + e.getMessage());
         }
-    }
-
-    android.hardware.Camera getCamera() {
-        return mCamera;
     }
 
     public void previewCallback(final Camera.PreviewCallback callback) {
@@ -177,4 +178,19 @@ final class CameraWrapper implements CameraInterface {
     private Bitmap getBitmapFromByteArray(byte[] data) {
         return BitmapFactory.decodeByteArray(data, 0, data.length);
     }
+
+    void attach(@NonNull CameraWrapper.CameraListener... cameraListeners) {
+        Collections.addAll(listeners, cameraListeners);
+    }
+
+    private void notifyListeners(@NonNull android.hardware.Camera mCamera) {
+        for (CameraWrapper.CameraListener listener : listeners) {
+            listener.cameraAvailable(mCamera);
+        }
+    }
+
+    interface CameraListener {
+        void cameraAvailable(@NonNull Camera camera);
+    }
+
 }
