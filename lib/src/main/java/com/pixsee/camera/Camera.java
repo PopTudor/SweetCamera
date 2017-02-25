@@ -6,6 +6,7 @@ import android.os.HandlerThread;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
+import android.util.Log;
 import android.view.TextureView;
 
 import java.io.File;
@@ -75,7 +76,7 @@ final public class Camera implements CameraInterface {
     }
 
     @Override
-    public void startPreview(@NonNull final TextureView preview) {
+    synchronized public void startPreview(@NonNull final TextureView preview) {
         mPreview = preview;
         mHandler.post(new Runnable() {
             @Override
@@ -129,6 +130,10 @@ final public class Camera implements CameraInterface {
     public void switchCamera() {
         close();
         mConfiguration.switchFacing();
+        if (mPreview == null) {
+            Log.d(this.getClass().getSimpleName(), "Camera switched but no preview set and not open yet");
+            return;
+        }
         open();
         startPreview(mPreview);
     }

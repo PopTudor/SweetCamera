@@ -103,6 +103,8 @@ public final class CameraWrapper implements CameraInterface {
 
     @Override
     public void stopPreview() {
+        if (mCamera == null) // camera is not even initialised
+            return;
         mCamera.stopPreview();
     }
 
@@ -163,11 +165,15 @@ public final class CameraWrapper implements CameraInterface {
 
     public void takePicture(ShutterCallback shutterCallback) {
         this.shutterCallback = shutterCallback;
+        if (mCamera == null)
+            return;
         mCamera.takePicture(shutterCallbackCamera, null, pictureCallback);
     }
 
     public void takePicture(PictureBitmapCallback pictureBitmapCallback) {
         this.pictureBitmapCallback = pictureBitmapCallback;
+        if (mCamera == null)
+            return;
         mCamera.takePicture(shutterCallbackCamera, null, pictureCallback);
     }
 

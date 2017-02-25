@@ -29,7 +29,7 @@ public final class CameraConfiguration implements CameraWrapper.CameraListener {
     private int orientation = Configuration.ORIENTATION_PORTRAIT;
     private int rotation;
     private Size mSize;
-
+    private int zoom = -1;
 
     CameraConfiguration(@NonNull Activity activity) {
         mActivity = activity;
@@ -128,7 +128,13 @@ public final class CameraConfiguration implements CameraWrapper.CameraListener {
         return new Size(mSize.getWidth(), mSize.getHeight());
     }
 
+    /**
+     * Set the zoom for the camera. If camera is not open, nothing happens
+     *
+     * @param zoom
+     */
     public void setZoom(int zoom) {
+        if (mCamera == null) return;
         Camera.Parameters parameters = mCamera.getParameters();
         if (!parameters.isZoomSupported())
             return;
