@@ -42,7 +42,7 @@ final public class Camera implements CameraInterface {
         mHandler = new Handler(mHandlerThread.getLooper());
         mConfiguration = new CameraConfiguration(activity);
         mCameraRecorder = new CameraRecorder(mConfiguration);
-        mCameraWrapper = new CameraWrapper(activity);
+        mCameraWrapper = new CameraWrapper(activity, mConfiguration);
         attach(mConfiguration, mCameraRecorder);
     }
 
@@ -56,7 +56,7 @@ final public class Camera implements CameraInterface {
     }
 
     @Override
-    public void open(@CameraFacing final int facing) {
+    synchronized public void open(@CameraFacing final int facing) {
         if (isOpen()) {
             throw new RuntimeException("Camera is already opened!");
         }
@@ -64,16 +64,6 @@ final public class Camera implements CameraInterface {
         notifyListeners(mCameraWrapper.getCamera());
         mConfiguration.setCameraFacing(facing);
         mConfiguration.configureRotation();
-    }
-
-    public void openAsync(@CameraFacing final int facing) {
-        if (isOpen()) throw new RuntimeException("Camera is already opened!");
-        mHandler.post(new Runnable() {
-            @Override
-            public void run() {
-                open(facing);
-            }
-        });
     }
 
     /**
@@ -84,8 +74,13 @@ final public class Camera implements CameraInterface {
      */
     public void openAndStart(@CameraFacing final int facing, @NonNull final TextureView preview) {
         if (mCameraWrapper.isOpen()) return;
-        open(facing);
-        startPreview(preview);
+        mHandler.post(new Runnable() {
+            @Override
+            public void run() {
+                open(facing);
+                startPreview(preview);
+            }
+        });
     }
 
     public void open() {
@@ -98,7 +93,7 @@ final public class Camera implements CameraInterface {
         mHandler.post(new Runnable() {
             @Override
             public void run() {
-                mConfiguration.configurePreviewSize(mPreview);
+                mConfiguration.configurePreviewSize(preview);
                 mCameraWrapper.startPreview(preview);
             }
         });

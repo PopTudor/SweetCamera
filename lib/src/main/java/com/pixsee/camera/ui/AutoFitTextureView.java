@@ -1,11 +1,12 @@
 package com.pixsee.camera.ui;
 
 import android.content.Context;
-import android.hardware.Camera;
 import android.support.annotation.NonNull;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.view.TextureView;
+
+import com.pixsee.camera.Size;
 
 import static android.content.ContentValues.TAG;
 
@@ -15,7 +16,7 @@ import static android.content.ContentValues.TAG;
  */
 public class AutoFitTextureView extends TextureView {
 
-    private Camera.Size mPreviewSize;
+    private Size mPreviewSize;
 
     public AutoFitTextureView(Context context) {
         this(context, null);
@@ -36,8 +37,8 @@ public class AutoFitTextureView extends TextureView {
      *
      * @param previewSize holds the optimised width/height of the preview
      */
-    public void setAspectRatio(@NonNull final Camera.Size previewSize) {
-        if (previewSize.width < 0 || previewSize.height < 0) {
+    public void setAspectRatio(@NonNull final Size previewSize) {
+        if (previewSize.getWidth() < 0 || previewSize.getHeight() < 0) {
             throw new IllegalArgumentException("Size cannot be negative.");
         }
         mPreviewSize = previewSize;
@@ -55,25 +56,25 @@ public class AutoFitTextureView extends TextureView {
         }
 
         float ratio;
-        if (mPreviewSize.height >= mPreviewSize.width)
-            ratio = (float) mPreviewSize.height / (float) mPreviewSize.width;
+        if (mPreviewSize.getHeight() >= mPreviewSize.getWidth())
+            ratio = (float) mPreviewSize.getHeight() / (float) mPreviewSize.getWidth();
         else
-            ratio = (float) mPreviewSize.width / (float) mPreviewSize.height;
+            ratio = (float) mPreviewSize.getWidth() / (float) mPreviewSize.getHeight();
 
         float camHeight = (int) (width * ratio);
         float newCamHeight;
         float newHeightRatio;
 
         if (camHeight < height) {
-            newHeightRatio = (float) height / (float) mPreviewSize.height;
+            newHeightRatio = (float) height / (float) mPreviewSize.getHeight();
             newCamHeight = (newHeightRatio * camHeight);
-            Log.e(TAG, camHeight + " " + height + " " + mPreviewSize.height + " " + newHeightRatio + " " + newCamHeight);
+            Log.e(TAG, camHeight + " " + height + " " + mPreviewSize.getHeight() + " " + newHeightRatio + " " + newCamHeight);
             setMeasuredDimension((int) (width * newHeightRatio), (int) newCamHeight);
-            Log.e(TAG, mPreviewSize.width + " | " + mPreviewSize.height + " | ratio - " + ratio + " | H_ratio - " + newHeightRatio + " | A_width - " + (width * newHeightRatio) + " | A_height - " + newCamHeight);
+            Log.e(TAG, mPreviewSize.getWidth() + " | " + mPreviewSize.getHeight() + " | ratio - " + ratio + " | H_ratio - " + newHeightRatio + " | A_width - " + (width * newHeightRatio) + " | A_height - " + newCamHeight);
         } else {
             newCamHeight = camHeight;
             setMeasuredDimension(width, (int) newCamHeight);
-            Log.e(TAG, mPreviewSize.width + " | " + mPreviewSize.height + " | ratio - " + ratio + " | A_width - " + (width) + " | A_height - " + newCamHeight);
+            Log.e(TAG, mPreviewSize.getWidth() + " | " + mPreviewSize.getHeight() + " | ratio - " + ratio + " | A_width - " + (width) + " | A_height - " + newCamHeight);
         }
     }
 

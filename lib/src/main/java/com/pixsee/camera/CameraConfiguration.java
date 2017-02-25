@@ -10,7 +10,6 @@ import android.view.TextureView;
 
 import com.pixsee.camera.ui.AutoFitTextureView;
 
-import java.util.Collections;
 import java.util.List;
 
 import static android.content.ContentValues.TAG;
@@ -29,6 +28,7 @@ class CameraConfiguration implements com.pixsee.camera.Camera.CameraListener {
     private int cameraFacing = FRONT;
     private int orientation = Configuration.ORIENTATION_PORTRAIT;
     private int rotation;
+    private Size mSize;
 
 
     CameraConfiguration(@NonNull Activity activity) {
@@ -92,39 +92,40 @@ class CameraConfiguration implements com.pixsee.camera.Camera.CameraListener {
     }
 
     void configurePreviewSize(@NonNull final TextureView preview) {
-
-        // We need to make sure that our preview and recording video size are supported by the
-        // camera. Query camera to find all the sizes and choose the optimal size given the
-        // dimensions of our preview surface.
-        Camera.Parameters parameters = mCamera.getParameters();
-        List<Camera.Size> mSupportedPreviewSizes = parameters.getSupportedPreviewSizes();
-        final Camera.Size optimalSize = CameraHelper.getOptimalVideoSize(Collections.<Camera.Size>emptyList(),
-                mSupportedPreviewSizes, preview.getWidth(), preview.getHeight(), orientation);
+        mSize = getOptimalSize(preview);
 
         if (preview instanceof AutoFitTextureView)
             mActivity.runOnUiThread(new Runnable() {
                 @Override
                 public void run() {
-                    ((AutoFitTextureView) preview).setAspectRatio(optimalSize);
+                    ((AutoFitTextureView) preview).setAspectRatio(mSize);
                 }
             });
+        if (mCamera == null)
+            return;
 
+        Camera.Parameters parameters = mCamera.getParameters();
         // likewise for the camera object itself.
-        parameters.setPreviewSize(optimalSize.width, optimalSize.height);
+        parameters.setPreviewSize(mSize.getWidth(), mSize.getHeight());
         mCamera.setParameters(parameters);
     }
 
-    Camera.Size getOptimalSize(@NonNull TextureView preview) {
+    Size getOptimalSize(@NonNull TextureView preview) {
+        if (mCamera == null)
+            return new Size(preview.getWidth(), preview.getHeight());
         // We need to make sure that our preview and recording video size are supported by the
         // camera. Query camera to find all the sizes and choose the optimal size given the
         // dimensions of our preview surface.
         Camera.Parameters parameters = mCamera.getParameters();
         List<Camera.Size> mSupportedPreviewSizes = parameters.getSupportedPreviewSizes();
         List<Camera.Size> mSupportedVideoSizes = parameters.getSupportedVideoSizes();
-        Camera.Size optimalSize = CameraHelper.getOptimalVideoSize(mSupportedVideoSizes, mSupportedPreviewSizes, preview.getWidth(),
-                preview.getHeight(), orientation);
+        Camera.Size optimalSize = CameraHelper.getOptimalVideoSize(mSupportedVideoSizes, mSupportedPreviewSizes, preview.getWidth(), preview.getHeight(), orientation);
 
-        return optimalSize;
+        return new Size(optimalSize.width, optimalSize.height);
+    }
+
+    public Size getSize() {
+        return new Size(mSize.getWidth(), mSize.getHeight());
     }
 
     public void setZoom(int zoom) {

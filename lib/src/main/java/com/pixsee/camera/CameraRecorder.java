@@ -34,11 +34,11 @@ class CameraRecorder implements com.pixsee.camera.Camera.CameraListener {
     private boolean prepareVideoRecorder(@NonNull final TextureView preview) {
         configuration.setRecordHint(true);
         mMediaRecorder = new MediaRecorder();
-        Camera.Size optimalSize = configuration.getOptimalSize(preview);
+        Size optimalSize = configuration.getOptimalSize(preview);
         // Use the same size for recording profile.
         CamcorderProfile profile = CamcorderProfile.get(CamcorderProfile.QUALITY_HIGH);
-        profile.videoFrameWidth = optimalSize.width;
-        profile.videoFrameHeight = optimalSize.height;
+        profile.videoFrameWidth = optimalSize.getWidth();
+        profile.videoFrameHeight = optimalSize.getHeight();
 
         // BEGIN_INCLUDE (configure_media_recorder)
 

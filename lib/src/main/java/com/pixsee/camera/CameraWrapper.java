@@ -25,11 +25,11 @@ final class CameraWrapper implements CameraInterface {
     private FeatureChecker featureChecker;
     private byte[] mBuffer;
     private Camera.PreviewCallback callback;
-    private Size size;
+    private CameraConfiguration cameraConfiguration;
 
-    public CameraWrapper(Activity activity) {
+    public CameraWrapper(Activity activity, CameraConfiguration cameraConfiguration) {
         featureChecker = new FeatureChecker(activity.getPackageManager());
-
+        this.cameraConfiguration = cameraConfiguration;
     }
 
     @Override
@@ -56,7 +56,6 @@ final class CameraWrapper implements CameraInterface {
 
     @Override
     public void startPreview(@NonNull TextureView preview) {
-        size = new Size(preview.getWidth(), preview.getHeight());
         startPreviewSurfaceTexture(preview.getSurfaceTexture());
         addCallbacks();
     }
@@ -106,7 +105,8 @@ final class CameraWrapper implements CameraInterface {
         mCamera.setPreviewCallbackWithBuffer(new Camera.PreviewCallback() {
             @Override
             public void onPreviewFrame(byte[] data, Camera camera) {
-                callback.onPreviewFrame(data, camera);
+                if (callback != null)
+                    callback.onPreviewFrame(data, camera);
                 if (mCamera != null)
                     mCamera.addCallbackBuffer(mBuffer);
             }
@@ -114,7 +114,8 @@ final class CameraWrapper implements CameraInterface {
     }
 
     private void setupBuffer() {
-        int size = this.size.getWidth() * this.size.getHeight();
+        Size confSize = cameraConfiguration.getSize();
+        int size = confSize.getWidth() * confSize.getHeight();
         size = size * ImageFormat.getBitsPerPixel(mCamera.getParameters().getPreviewFormat()) / 8;
         if (mBuffer != null && size == mBuffer.length)
             return;
