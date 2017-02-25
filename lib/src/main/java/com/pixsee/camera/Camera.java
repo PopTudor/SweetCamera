@@ -1,7 +1,6 @@
 package com.pixsee.camera;
 
 import android.app.Activity;
-import android.hardware.Camera.ShutterCallback;
 import android.os.Handler;
 import android.os.HandlerThread;
 import android.support.annotation.NonNull;
@@ -14,7 +13,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import static android.hardware.Camera.PictureCallback;
 
 /**
  * Created by Tudor Pop on 2/1/2017.
@@ -159,13 +157,22 @@ final public class Camera implements CameraInterface {
         }
     }
 
-    public void takePicture(ShutterCallback shutterCallback, PictureCallback raw, PictureCallback jpeg) {
-        mCameraWrapper.getCamera().takePicture(shutterCallback, raw, jpeg);
+    public void takePicture(final ShutterCallback shutterCallback) {
+        mHandler.post(new Runnable() {
+            @Override
+            public void run() {
+                mCameraWrapper.takePicture(shutterCallback);
+            }
+        });
     }
 
-    public void takePicture(ShutterCallback shutterCallback, PictureCallback raw, PictureCallback postView,
-                            PictureCallback jpeg) {
-        mCameraWrapper.getCamera().takePicture(shutterCallback, raw, postView, jpeg);
+    public void takePicture(final PictureBitmapCallback pictureBitmapCallback) {
+        mHandler.post(new Runnable() {
+            @Override
+            public void run() {
+                mCameraWrapper.takePicture(pictureBitmapCallback);
+            }
+        });
     }
 
     public void addPreviewCallback(android.hardware.Camera.PreviewCallback callback) {

@@ -1,10 +1,14 @@
 package com.pixsee.camera;
 
 import android.app.Activity;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.ImageFormat;
+import android.graphics.Matrix;
 import android.graphics.SurfaceTexture;
 import android.hardware.Camera;
 import android.support.annotation.NonNull;
+import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.TextureView;
 
@@ -21,14 +25,45 @@ import static com.pixsee.camera.CameraFacing.FRONT;
 final class CameraWrapper implements CameraInterface {
     private static final Object lock = new Object();
     private static boolean isOpened = false;
+    private final Activity activity;
     private android.hardware.Camera mCamera;
     private FeatureChecker featureChecker;
     private byte[] mBuffer;
-    private Camera.PreviewCallback callback;
     private CameraConfiguration cameraConfiguration;
+    private Camera.PreviewCallback callback;
+    private ShutterCallback shutterCallback = new ShutterCallback() {
+        @Override
+        public void onShutter() {
+
+        }
+    };
+    private PictureBitmapCallback pictureBitmapCallback;
+    private Camera.ShutterCallback shutterCallbackCamera = new Camera.ShutterCallback() {
+        @Override
+        public void onShutter() {
+            shutterCallback.onShutter();
+        }
+    };
+    private boolean mirrorPicture;
+    private Camera.PictureCallback pictureCallback = new Camera.PictureCallback() {
+        @Override
+        public void onPictureTaken(byte[] data, Camera camera) {
+            if (pictureBitmapCallback != null) {
+                final Bitmap bitmap = getBitmapFromByteArray(data);
+                final Bitmap fliped = flip(bitmap);
+                activity.runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        pictureBitmapCallback.onPicture(fliped);
+                    }
+                });
+            }
+        }
+    };
 
     public CameraWrapper(Activity activity, CameraConfiguration cameraConfiguration) {
         featureChecker = new FeatureChecker(activity.getPackageManager());
+        this.activity = activity;
         this.cameraConfiguration = cameraConfiguration;
     }
 
@@ -52,7 +87,6 @@ final class CameraWrapper implements CameraInterface {
             }
         }
     }
-
 
     @Override
     public void startPreview(@NonNull TextureView preview) {
@@ -120,5 +154,27 @@ final class CameraWrapper implements CameraInterface {
         if (mBuffer != null && size == mBuffer.length)
             return;
         mBuffer = new byte[size];
+    }
+
+    public void takePicture(ShutterCallback shutterCallback) {
+        this.shutterCallback = shutterCallback;
+        mCamera.takePicture(shutterCallbackCamera, null, pictureCallback);
+    }
+
+    public void takePicture(PictureBitmapCallback pictureBitmapCallback) {
+        this.pictureBitmapCallback = pictureBitmapCallback;
+        mCamera.takePicture(shutterCallbackCamera, null, pictureCallback);
+    }
+
+    private Bitmap flip(Bitmap src) {
+        Matrix m = new Matrix();
+        m.preScale(-1, 1);
+        Bitmap dst = Bitmap.createBitmap(src, 0, 0, src.getWidth(), src.getHeight(), m, false);
+        dst.setDensity(DisplayMetrics.DENSITY_DEFAULT);
+        return dst;
+    }
+
+    private Bitmap getBitmapFromByteArray(byte[] data) {
+        return BitmapFactory.decodeByteArray(data, 0, data.length);
     }
 }

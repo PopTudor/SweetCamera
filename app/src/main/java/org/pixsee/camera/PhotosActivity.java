@@ -1,7 +1,5 @@
 package org.pixsee.camera;
 
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.ImageButton;
@@ -37,16 +35,9 @@ public class PhotosActivity extends BaseActivity implements View.OnClickListener
     public void onClick(View v) {
         switch (v.getId()) {
             case R.id.takePhoto:
-                camera.takePicture(() -> {
-
-                }, (data, camera1) -> {
-
-                }, (data, camera1) -> {
-                    Bitmap bitmap = BitmapFactory.decodeByteArray(data, 0, data.length);
-                    runOnUiThread(() -> {
-                        picture.setVisibility(View.VISIBLE);
-                        picture.setImageBitmap(bitmap);
-                    });
+                camera.takePicture(bitmap -> {
+                    picture.setVisibility(View.VISIBLE);
+                    picture.setImageBitmap(bitmap);
                 });
 
                 break;
