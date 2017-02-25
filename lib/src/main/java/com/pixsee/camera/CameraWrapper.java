@@ -12,6 +12,8 @@ import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.TextureView;
 
+import com.pixsee.camera.exception.CameraNotOpenException;
+
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -120,6 +122,8 @@ public final class CameraWrapper implements CameraInterface {
     }
 
     private void startPreviewSurfaceTexture(@NonNull final SurfaceTexture previewTexture) {
+        if (mCamera == null)
+            throw new CameraNotOpenException("Camera not opened! To start preview, a camera must be open");
         try {
             // Requires API level 11+, For backward compatibility use {@link setPreviewDisplay}
             // with {@link SurfaceView}

@@ -25,6 +25,7 @@ public class SimplePreview extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
+        camera.startPreview(preview);
         camera.openAndStart(CameraFacing.FRONT, preview);
         // or
 //        camera.open();

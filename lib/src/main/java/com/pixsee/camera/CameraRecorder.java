@@ -8,6 +8,8 @@ import android.support.annotation.NonNull;
 import android.util.Log;
 import android.view.TextureView;
 
+import com.pixsee.camera.exception.CameraNotOpenException;
+
 import java.io.File;
 import java.io.IOException;
 
@@ -77,7 +79,9 @@ class CameraRecorder implements CameraWrapper.CameraListener {
         return isPrepared;
     }
 
-    public void start(final TextureView preview) {
+    public void start(final TextureView preview) throws CameraNotOpenException {
+        if (mCamera == null)
+            throw new CameraNotOpenException();
         if (isRecording) return;
         if (prepareVideoRecorder(preview)) {
             mMediaRecorder.start();
